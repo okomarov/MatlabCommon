@@ -1,0 +1,3 @@
+[submodule "tableutils"]
+	path = tableutils
+	url = ../tableutils
