@@ -2,10 +2,11 @@ function tb = consolidateFromTo(tb)
 % CONSOLIDATEFROMTO Remove intermediate redundant from-to records
 %
 %   CONSOLIDATEFROMTO(TB) TB should be a table with:
-%           ID | From | To | Value
+%           ID | From | To | Value1 | Value...
 
 % Track changes in the value, i.e. Id | VALUE | FROM 
-idx = isfeatchange(tb(:,[1,4,2]));
+sz = size(tb);
+idx = isfeatchange(tb(:,[1,4:sz(2),2]));
 % Start/end positions
 stpos   = find(idx);
 enpos   = [stpos(2:end)-1; size(tb,1)];
