@@ -6,7 +6,11 @@ if isa(tb,'dataset')
     tb = dataset2table(tb);
 end
 if nargin < 2
-    shrcd = loadresults('shrcd');
+    try
+        shrcd = loadresults('shrcd');
+    catch
+        shrcd = loadresults('shrcd','..\results');
+    end
 end
 shrcd = shrcd(shrcd.Shrcd == 11 | shrcd.Shrcd == 10,{'Permno','Date'});
 tf    = ismembIdDate(tb.Permno, tb.Date, shrcd.Permno, shrcd.Date);

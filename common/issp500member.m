@@ -7,7 +7,11 @@ if isa(tb,'dataset')
     tb = dataset2table(tb);
 end
 if nargin < 2
-    spconst = loadresults('spconst');
+    try
+        spconst = loadresults('spconst');
+    catch
+        spconst = loadresults('spconst','..\results');
+    end
 end
 tf = ismembIdDate(tb.Permno, tb.Date, spconst.Permno, spconst.Date);
 end

@@ -46,7 +46,11 @@ end
 
 %% Engine
 % Load CRSP info
-mnames = loadresults('msenames');
+try
+    mnames = loadresults('msenames');
+catch
+    mnames = loadresults('msenames','..\results');
+end
 
 % Filter out by exchange code
 idx    = ismember(mnames.Exchcd, code);
