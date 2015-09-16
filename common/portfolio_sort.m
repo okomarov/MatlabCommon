@@ -1,9 +1,15 @@
-function [ptfret, ptfGroup, groupCount] = portfolio_sort(ret, signals, opts)
+function [ptfret, ptfGroup, groupCount] = portfolio_sort(ret, signals, varargin)
+% portfolio_sort(ret, signals, opts)
+
 if isnumeric(signals)
     signals = {signals};
 end
-if nargin < 3 || isempty(opts)
+if nargin < 3 
     opts = struct();
+elseif nargin == 3 && isstruct(varargin{1})
+    opts = varargin{1};
+else
+    opts = cell2struct(varargin(2:2:end), varargin(1:2:end),2);
 end
 
 [nobs,nseries] = size(ret);
@@ -43,6 +49,7 @@ if isempty(w)
 else
     % Normalize weights at each date by signal group to sum to 1
     wsum   = accumarray(subs, nan2zero(w(:)));
+    wsum   = wsum(:);
     pos    = sub2ind([nobs,nseries],subs(:,1), subs(:,2));
     wnorm  = w(:)./wsum(pos);
     ptfret = accumarray(subs, nan2zero(ret(:) .* wnorm));
