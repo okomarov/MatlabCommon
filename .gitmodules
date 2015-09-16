@@ -4,3 +4,6 @@
 [submodule "nanfillts"]
 	path = nanfillts
 	url = https://github.com/okomarov/nanfillts
+[submodule "importFrenchData"]
+	path = importFrenchData
+	url = ../importFrenchData
