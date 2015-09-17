@@ -50,7 +50,6 @@ tbstats.Medret    = nanmedian(ret)';
 tbstats.Maxret    = nanmax(ret)';
 tbstats.Skew      = skewness(ret)';
 tbstats.Kurt      = kurtosis(ret)';
-tbstats.AC1       = arrayfun(@(x) autocorr(ret(:,x),1),1:sz(2))';
 tbstats.SR        = tbstats.Annret./tbstats.Annstd;
 [mdd,imdd]        = maxdrawdown(lvl);
 tbstats.Mdd       = mdd(:);
