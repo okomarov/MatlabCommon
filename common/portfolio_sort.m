@@ -1,5 +1,5 @@
 function [ptfret, ptfGroup, groupCount] = portfolio_sort(ret, signals, varargin)
-% portfolio_sort(ret, signals, opts)
+% [ptfret, ptfGroup, groupCount] = portfolio_sort(ret, signals, opts)
 
 if isnumeric(signals)
     signals = {signals};
