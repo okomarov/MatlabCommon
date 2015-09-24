@@ -1,12 +1,21 @@
-function [tbstats, tbarets] = stratstats(dates, ret, freq, isperc)
+function [tbstats, tbarets] = stratstats(dates, ret, varargin)
 % [tbstats, tbarets] = stratstats(dates, ret, freq, isperc)
 
-if nargin < 3 || isempty(freq)
-    freq = 'd';
-end
-if nargin < 4 || isempty(isperc)
-    isperc = false;
-end
+% Parse inputs
+p = inputParser();
+p.FunctionName = 'stratstats';
+
+addRequired(p, 'dates')
+addRequired(p, 'ret')
+addParameter(p,'Frequency', 'd',  @(x) any(validatestring(x,{'d','m'})))
+addParameter(p,'IsPercentageReturn', false,@(x) islogical(x) && isscalar(x))
+addParameter(p,'UseSimpleInterest', true,@(x) islogical(x) && isscalar(x))
+
+parse(p, dates, ret, varargin{:});
+
+freq   = p.Results.Frequency;
+isperc = p.Results.IsPercentageReturn;
+
 if ~isdatetime(dates)
     dates = yyyymmdd2datetime(dates);
 end
