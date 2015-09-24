@@ -3,5 +3,5 @@ function n = hhmmssmat2serial(hhmmss)
 if ~isa(hhmmss,'double')
     hhmmss = double(hhmmss);
 end
-n = sum(bsxfun(@rdivide, hhmmss, [24,1440,86400]),2);
+n = hhmmss(:,1)/24 + hhmmss(:,1)/1440 + hhmmss(:,1)/86400;
 end
