@@ -17,6 +17,7 @@ end
 % Extract weights
 try
     w = opts.Weights;
+    opts = rmfield(opts, 'Weights');
 catch
     w = [];
 end

@@ -183,10 +183,11 @@ opts = struct('IndependentSort', true    ,...
     'PortfolioEdges' , []      );
 
 % Overwrite with supplied options
-for f = fieldnames(opts)'
-    try
+for f = fieldnames(suppliedOpt)'
+    if isfield(opts, f)
         opts.(f{1}) = suppliedOpt.(f{1});
-    catch
+    else
+        warning('binPortfolios:unrecognizedOption','Unrecognized option "%s".',f{1})
     end
 end
 opts.HasEdges = ~isempty(opts.PortfolioEdges);
