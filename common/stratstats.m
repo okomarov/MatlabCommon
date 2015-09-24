@@ -39,11 +39,12 @@ fun          = @(x) hac(ones(sz(1),1), ret(:,x),opts{:});
 % Stats
 tbstats           = table();
 tbstats.Avgret    = coeff(:);
+tbstats.Std       = se(:)*sqrt(sz(1));
 tbstats.Se        = se(:);
 tbstats.Pval(:,1) = tcdf(-abs(coeff./se),sz(1)-1)*2; 
 lvl               = ret2lvl(ret,isperc);
 tbstats.Annret    = lvl(end,:)'.^(1/years(dates(end)-dates(1)))-1;
-tbstats.Annstd    = nanstd(ret)'*sqrt(scale);
+tbstats.Annstd    = tbstats.Std * sqrt(scale);
 tbstats.Downstd   = nanstd(double(ret > 0) .* ret)' * sqrt(scale);
 tbstats.Minret    = nanmin(ret)';
 tbstats.Medret    = nanmedian(ret)';
