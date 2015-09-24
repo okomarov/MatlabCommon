@@ -52,7 +52,11 @@ tbstats.Std       = se(:)*sqrt(sz(1));
 tbstats.Se        = se(:);
 tbstats.Pval(:,1) = tcdf(-abs(coeff./se),sz(1)-1)*2; 
 lvl               = ret2lvl(ret,isperc);
-tbstats.Annret    = lvl(end,:)'.^(1/years(dates(end)-dates(1)))-1;
+if p.Results.UseSimpleInterest
+    tbstats.Annret = tbstats.Avgret * scale;
+else
+    tbstats.Annret = lvl(end,:)'.^(1/years(dates(end)-dates(1)))-1;
+end
 tbstats.Annstd    = tbstats.Std * sqrt(scale);
 tbstats.Downstd   = nanstd(double(ret > 0) .* ret)' * sqrt(scale);
 tbstats.Minret    = nanmin(ret)';
@@ -75,7 +79,6 @@ if nargout == 2
     tbarets = level2arets(lvl,dates);
 end
 end
-
 function lvl = ret2lvl(ret,isperc)
 if isperc
     ret = ret/100;
