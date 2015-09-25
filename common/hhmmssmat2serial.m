@@ -3,5 +3,5 @@ function n = hhmmssmat2serial(hhmmss)
 if ~isa(hhmmss,'double')
     hhmmss = double(hhmmss);
 end
-n = hhmmss(:,1)/24 + hhmmss(:,1)/1440 + hhmmss(:,1)/86400;
+n = hhmmss(:,1)/24 + hhmmss(:,2)/1440 + hhmmss(:,3)/86400;
 end
