@@ -13,6 +13,10 @@ else
 end
 
 [nobs,nseries] = size(ret);
+if ~all(nobs == cellfun('size', signals,1)) || ...
+   ~all(nseries == cellfun('size', signals,2))
+    error('portfolio_sort:sizeMismatch','SIGNALS must have same size as RET.')
+end
 
 % Extract weights
 try
