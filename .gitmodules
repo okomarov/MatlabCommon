@@ -1,6 +1,6 @@
 [submodule "tableutils"]
 	path = tableutils
-	url = ../tableutils
+	url = https://github.com/okomarov/tableutils
 [submodule "nanfillts"]
 	path = nanfillts
 	url = https://github.com/okomarov/nanfillts
