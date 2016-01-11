@@ -1,4 +1,4 @@
-function [ptfret, ptfGroup, groupCount] = portfolio_sort(ret, signals, varargin)
+function [ptfret, ptfGroup, groupCount, avgSignal] = portfolio_sort(ret, signals, varargin)
 % PORTFOLIO_SORT Get return series of percentile-sorted portfolios
 %
 %   PORTFOLIO_SORT(RET, SIGNALS)
@@ -68,8 +68,14 @@ subs = [row(:), ptfGroup(:)+1];
 % Ptf returns as XS averages
 % NOTE: avoid nansum/mean to gain a 3-4x speedup
 count     = accumarray(subs, ~isnan(ret(:)));
+avgSignal = NaN(nobs,max(ptfId)+1,nsig);
 if isempty(w)
     ptfret = accumarray(subs, nan2zero(ret(:)))./count;
+
+    % Average of signals
+    for s = 1:nsig
+        avgSignal(:,:,s) = accumarray(subs, nan2zero(signals{s}(:)))./count;
+    end
 else
     % Normalize weights at each date by signal group to sum to 1
     wsum   = accumarray(subs, nan2zero(w(:)));
@@ -77,6 +83,11 @@ else
     pos    = sub2ind([nobs,nseries],subs(:,1), subs(:,2));
     wnorm  = w(:)./wsum(pos);
     ptfret = accumarray(subs, nan2zero(ret(:) .* wnorm));
+
+    % Average of signals
+    for s = 1:nsig
+        avgSignal(:,:,s) = accumarray(subs, nan2zero(signals{s}(:) .* wnorm));
+    end
 end
 
 % Fill NaNs
@@ -85,4 +96,16 @@ ptfret(inan) = NaN;
 
 % Drop null-indexed ptf
 ptfret = ptfret(:,2:end);
+
+% Average of signals
+if nargout == 4
+    for s = 1:nsig
+        if isempty(w)
+            avgSignal(:,:,s) = accumarray(subs, nan2zero(signals{s}(:)))./count;
+        else
+            avgSignal(:,:,s) = accumarray(subs, nan2zero(signals{s}(:) .* wnorm));
+        end
+    end
+    avgSignal = avgSignal(:,2:end,:);
+end
 end
