@@ -1,10 +1,28 @@
 function [ptfret, ptfGroup, groupCount] = portfolio_sort(ret, signals, varargin)
-% [ptfret, ptfGroup, groupCount] = portfolio_sort(ret, signals, opts)
+% PORTFOLIO_SORT Get return series of percentile-sorted portfolios
+%
+%   PORTFOLIO_SORT(RET, SIGNALS)
+%       SIGNALS and RET are same-size matrices where rows denote the
+%       time dimension and columns the cross-sectional dimension.
+%       SIGNALS are binned by percentile on each date and the intra-bin
+%       average returns are calculated.
+%
+%   PORTFOLIO_SORT(..., OPTS or Name/Value pairs)
+%       OPTS.() is a structure that can have the following exact fields
+%       (defaults on the right):
+%           .Weights         - equal weighted
+%           .IndependentSort - True
+%           .PortfolioNumber - 5
+%           .PortfolioEdges  - [], prevails on PortfolioNumber
+%
+%   [PTFRET, PTFGROUP, GROUPCOUNT, AVGSIGNAL] = ...
+%
+% See also: BINSIGNAL
 
 if isnumeric(signals)
     signals = {signals};
 end
-if nargin < 3 
+if nargin < 3
     opts = struct();
 elseif nargin == 3 && isstruct(varargin{1})
     opts = varargin{1};
@@ -20,7 +38,7 @@ end
 
 % Extract weights
 try
-    w = opts.Weights;
+    w    = opts.Weights;
     opts = rmfield(opts, 'Weights');
 catch
     w = [];
@@ -28,14 +46,15 @@ end
 
 % Intersect all NaNs
 inan = isnan(ret);
-for s = 1:numel(signals)
+nsig = numel(signals);
+for s = 1:nsig
     inan = inan | isnan(signals{s});
 end
 if ~isempty(w)
-    inan = inan | isnan(w);
+    inan    = inan | isnan(w);
     w(inan) = NaN;
 end
-for s = 1:numel(signals)
+for s = 1:nsig
     signals{s}(inan) = NaN;
 end
 
@@ -48,7 +67,7 @@ subs = [row(:), ptfGroup(:)+1];
 
 % Ptf returns as XS averages
 % NOTE: avoid nansum/mean to gain a 3-4x speedup
-count = accumarray(subs, ~isnan(ret(:)));
+count     = accumarray(subs, ~isnan(ret(:)));
 if isempty(w)
     ptfret = accumarray(subs, nan2zero(ret(:)))./count;
 else
