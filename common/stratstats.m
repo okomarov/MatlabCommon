@@ -2,7 +2,7 @@ function [tbstats, tbarets] = stratstats(dates, ret, varargin)
 % [tbstats, tbarets] = stratstats(dates, ret, freq, isperc)
 
 % Parse inputs
-p = inputParser();
+p              = inputParser();
 p.FunctionName = 'stratstats';
 
 addRequired(p, 'dates')
@@ -19,8 +19,9 @@ isperc = p.Results.IsPercentageReturn;
 if ~isdatetime(dates)
     dates = yyyymmdd2datetime(dates);
 end
+dates = dates(:);
 
-% Annualizing factor 
+% Annualizing factor
 switch freq
     case 'd'
         scale = 252;
@@ -50,27 +51,29 @@ tbstats           = table();
 tbstats.Avgret    = coeff(:);
 tbstats.Std       = se(:)*sqrt(sz(1));
 tbstats.Se        = se(:);
-tbstats.Pval(:,1) = tcdf(-abs(coeff./se),sz(1)-1)*2; 
+tbstats.Pval(:,1) = tcdf(-abs(coeff./se),sz(1)-1)*2;
 lvl               = ret2lvl(ret,isperc);
 if p.Results.UseSimpleInterest
     tbstats.Annret = tbstats.Avgret * scale;
 else
     tbstats.Annret = lvl(end,:)'.^(1/years(dates(end)-dates(1)))-1;
 end
-tbstats.Annstd    = tbstats.Std * sqrt(scale);
-tbstats.Downstd   = nanstd(double(ret > 0) .* ret)' * sqrt(scale);
-tbstats.Minret    = nanmin(ret)';
-tbstats.Medret    = nanmedian(ret)';
-tbstats.Maxret    = nanmax(ret)';
-tbstats.Skew      = skewness(ret)';
-tbstats.Kurt      = kurtosis(ret)';
-tbstats.SR        = tbstats.Annret./tbstats.Annstd;
-[mdd,imdd]        = maxdrawdown(lvl);
-tbstats.Mdd       = mdd(:);
+tbstats.Annstd  = tbstats.Std * sqrt(scale);
+tbstats.Downstd = nanstd(double(ret > 0) .* ret)' * sqrt(scale);
+tbstats.Minret  = nanmin(ret)';
+tbstats.Medret  = nanmedian(ret)';
+tbstats.Maxret  = nanmax(ret)';
+tbstats.Skew    = skewness(ret)';
+tbstats.Kurt    = kurtosis(ret)';
+tbstats.SR      = tbstats.Annret./tbstats.Annstd;
+[mdd,imdd]      = maxdrawdown(lvl);
+tbstats.Mdd     = mdd(:);
 if freq == 'd'
     tbstats.Mddlen = days(dates(imdd(end,:))-dates(imdd(1,:)));
 else
-    tbstats.Mddlen = months(dates(imdd(1,:)),dates(imdd(end,:)),1);
+    from           = datenum(dates(imdd(1,:)));
+    to             = datenum(dates(imdd(end,:)));
+    tbstats.Mddlen = months(from,to,1);
 end
 tbstats.Reclen  = timeToRecovery(lvl, dates, imdd, freq);
 tbstats.Sortino = tbstats.Annret./tbstats.Downstd;
@@ -87,15 +90,15 @@ inan      = isnan(ret);
 ret(inan) = 0;
 from      = find(~inan,1,'first')-1;
 c         = size(ret,2);
-lvl       = [NaN(from-1,c); 
-             cumprod([ones(1,c); ret(from+1:end,:)+1])];
+lvl       = [NaN(from-1,c);
+    cumprod([ones(1,c); ret(from+1:end,:)+1])];
 end
 
 function arets = level2arets(lvl,dates)
 sz    = size(lvl);
 rsub  = repmat(cumsum([1; logical(diff(year(dates)))]), 1, sz(2));
 csub  = repmat(1:sz(2),sz(1),1);
-arets = accumarray([rsub(:),csub(:)],lvl(:), [],@(x) x(end)./x(1)-1); 
+arets = accumarray([rsub(:),csub(:)],lvl(:), [],@(x) x(end)./x(1)-1);
 end
 
 function reclen = timeToRecovery(lvl,dates, imdd, freq)
@@ -114,7 +117,9 @@ for ii = 1:nser
     if freq == 'd'
         reclen(ii) = days(dates(irec)-dates(imdd(end,ii)));
     else
-        reclen(ii) = months(dates(imdd(end,ii)),dates(irec),1);
+        from       = datenum(dates(imdd(end,ii)));
+        to         = datenum(dates(irec));
+        reclen(ii) = months(from,to,1);
     end
     if ~hasRecovered
         reclen(ii) = -reclen(ii);
