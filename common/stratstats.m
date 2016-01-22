@@ -59,7 +59,7 @@ else
     tbstats.Annret = lvl(end,:)'.^(1/years(dates(end)-dates(1)))-1;
 end
 tbstats.Annstd  = tbstats.Std * sqrt(scale);
-tbstats.Downstd = nanstd(double(ret > 0) .* ret)' * sqrt(scale);
+tbstats.Downstd = sqrt(nanmean(double(ret<=0) .* ret.^2))' * sqrt(scale);
 tbstats.Minret  = nanmin(ret)';
 tbstats.Medret  = nanmedian(ret)';
 tbstats.Maxret  = nanmax(ret)';
