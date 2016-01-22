@@ -1,5 +1,40 @@
 function [tbstats, tbarets] = stratstats(dates, ret, varargin)
 % [tbstats, tbarets] = stratstats(dates, ret, freq, isperc)
+%
+%   STRATSTATS(DATES, RET) 
+%       Calculates several statistics on each column of the RET matrix. 
+%       DATES can be in 'yyyymmdd' numeric format or in datetime() 
+%       and must have the same lenght as RET.
+%
+%   STRATSTATS(..., NAME, VALUE,...) 
+%       Valid NAME/VALUE pairs are:
+%           'Frequency' - 'd' (default) for daily or 'm'  for monthly. 
+%               Specifies at which frequency are expressed the returns.
+%           'IsPercentageReturn' - false (default) or true.
+%           'UseSimpleInterest'  - true (default) or false. Alternatively
+%               uses compounded return to calculate statistics. 
+%
+%   [TBSTATS, TBARETS] = ...
+%       TBSTATS is a table with the following statistics:
+%           .Avgret  - mean
+%           .Std     - standard deviation (Newey-West robust)
+%           .Se      - Newey-West robust standard error with fixed 
+%                      bandwidth at floor(4*(nobs/100)^(2/9))+1
+%           .Pval    - pValue
+%           .Annret  - annualized mean return
+%           .Annstd  - annualized standard deviation 
+%           .Downstd - annualized downside deviation with threshold at 0
+%           .Minret  - minimum
+%           .Medret  - median
+%           .Maxret  - maximum
+%           .Skew    - skewness
+%           .Kurt    - kurtosis
+%           .SR      - Sharpe ratio
+%           .Mdd     - maximum drawdown, i.e. deepest negative trend 
+%           .Mddlen  - time from start to end of the MDD 
+%           .Reclen  - time taken to recover the drawdown. If negative,
+%                      then recovery not completed by the end of the data
+%           .Sortino - Sortino ratio, i.e. Annret/Downstd 
 
 % Parse inputs
 p              = inputParser();
