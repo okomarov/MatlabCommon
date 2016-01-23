@@ -102,7 +102,7 @@ tbstats.Skew    = skewness(ret)';
 tbstats.Kurt    = kurtosis(ret)';
 tbstats.SR      = tbstats.Annret./tbstats.Annstd;
 [mdd,imdd]      = maxdrawdown(lvl);
-tbstats.Mdd     = mdd(:);
+tbstats.Mdd     = mdd(:)*100^double(isperc);
 if freq == 'd'
     tbstats.Mddlen = days(dates(imdd(end,:))-dates(imdd(1,:)));
 else
