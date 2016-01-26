@@ -23,13 +23,13 @@ function [tbstats, tbarets] = stratstats(dates, ret, varargin)
 %           .Pval    - pValue
 %           .Annret  - annualized mean return
 %           .Annstd  - annualized standard deviation 
+%           .SR      - Sharpe ratio
 %           .Downstd - annualized downside deviation with threshold at 0
 %           .Minret  - minimum
 %           .Medret  - median
 %           .Maxret  - maximum
 %           .Skew    - skewness
 %           .Kurt    - kurtosis
-%           .SR      - Sharpe ratio
 %           .Mdd     - maximum drawdown, i.e. deepest negative trend 
 %           .Mddlen  - time from start to end of the MDD 
 %           .Reclen  - time taken to recover the drawdown. If negative,
@@ -94,13 +94,13 @@ else
     tbstats.Annret = lvl(end,:)'.^(1/years(dates(end)-dates(1)))-1;
 end
 tbstats.Annstd  = tbstats.Std * sqrt(scale);
+tbstats.SR      = tbstats.Annret./tbstats.Annstd;
 tbstats.Downstd = sqrt(nanmean(double(ret<=0) .* ret.^2))' * sqrt(scale);
 tbstats.Minret  = nanmin(ret)';
 tbstats.Medret  = nanmedian(ret)';
 tbstats.Maxret  = nanmax(ret)';
 tbstats.Skew    = skewness(ret)';
 tbstats.Kurt    = kurtosis(ret)';
-tbstats.SR      = tbstats.Annret./tbstats.Annstd;
 [mdd,imdd]      = maxdrawdown(lvl);
 tbstats.Mdd     = mdd(:)*100^double(isperc);
 if freq == 'd'
