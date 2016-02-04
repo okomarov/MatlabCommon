@@ -150,6 +150,9 @@ end
 end
 
 function [opts, signals] = parseInputs(varargin)
+if nargin == 1
+    varargin = [varargin, struct()];
+end
 varargin = varargin(:);
 
 % Options can be name/value pairs OR a struct
