@@ -1,28 +1,28 @@
 function [tbstats, tbarets] = stratstats(dates, ret, varargin)
 % [tbstats, tbarets] = stratstats(dates, ret, freq, isperc)
 %
-%   STRATSTATS(DATES, RET) 
-%       Calculates several statistics on each column of the RET matrix. 
-%       DATES can be in 'yyyymmdd' numeric format or in datetime() 
+%   STRATSTATS(DATES, RET)
+%       Calculates several statistics on each column of the RET matrix.
+%       DATES can be in 'yyyymmdd' numeric format or in datetime()
 %       and must have the same lenght as RET.
 %
-%   STRATSTATS(..., NAME, VALUE,...) 
+%   STRATSTATS(..., NAME, VALUE,...)
 %       Valid NAME/VALUE pairs are:
-%           'Frequency' - 'd' (default) for daily or 'm'  for monthly. 
+%           'Frequency' - 'd' (default) for daily or 'm'  for monthly.
 %               Specifies at which frequency are expressed the returns.
 %           'IsPercentageReturn' - false (default) or true.
 %           'UseSimpleInterest'  - true (default) or false. Alternatively
-%               uses compounded return to calculate statistics. 
+%               uses compounded return to calculate statistics.
 %
 %   [TBSTATS, TBARETS] = ...
 %       TBSTATS is a table with the following statistics:
 %           .Avgret  - mean
 %           .Std     - standard deviation (Newey-West robust)
-%           .Se      - Newey-West robust standard error with fixed 
+%           .Se      - Newey-West robust standard error with fixed
 %                      bandwidth at floor(4*(nobs/100)^(2/9))+1
 %           .Pval    - pValue
 %           .Annret  - annualized mean return
-%           .Annstd  - annualized standard deviation 
+%           .Annstd  - annualized standard deviation
 %           .SR      - Sharpe ratio
 %           .Downstd - annualized downside deviation with threshold at 0
 %           .Minret  - minimum
@@ -30,11 +30,11 @@ function [tbstats, tbarets] = stratstats(dates, ret, varargin)
 %           .Maxret  - maximum
 %           .Skew    - skewness
 %           .Kurt    - kurtosis
-%           .Mdd     - maximum drawdown, i.e. deepest negative trend 
-%           .Mddlen  - time from start to end of the MDD 
+%           .Mdd     - maximum drawdown, i.e. deepest negative trend
+%           .Mddlen  - time from start to end of the MDD
 %           .Reclen  - time taken to recover the drawdown. If negative,
 %                      then recovery not completed by the end of the data
-%           .Sortino - Sortino ratio, i.e. Annret/Downstd 
+%           .Sortino - Sortino ratio, i.e. Annret/Downstd
 
 % Parse inputs
 p              = inputParser();
@@ -101,16 +101,25 @@ tbstats.Medret  = nanmedian(ret)';
 tbstats.Maxret  = nanmax(ret)';
 tbstats.Skew    = skewness(ret)';
 tbstats.Kurt    = kurtosis(ret)';
-[mdd,imdd]      = maxdrawdown(lvl);
-tbstats.Mdd     = mdd(:)*100^double(isperc);
-if freq == 'd'
-    tbstats.Mddlen = days(dates(imdd(end,:))-dates(imdd(1,:)));
-else
-    from           = datenum(dates(imdd(1,:)));
-    to             = datenum(dates(imdd(end,:)));
-    tbstats.Mddlen = months(from,to,1);
+
+% Fails if prices go below 0
+try
+    [mdd,imdd]  = maxdrawdown(lvl);
+    tbstats.Mdd = mdd(:)*100^double(isperc);
+    if freq == 'd'
+        tbstats.Mddlen = days(dates(imdd(end,:))-dates(imdd(1,:)));
+    else
+        from           = datenum(dates(imdd(1,:)));
+        to             = datenum(dates(imdd(end,:)));
+        tbstats.Mddlen = months(from,to,1);
+    end
+    tbstats.Reclen = timeToRecovery(lvl, dates, imdd, freq);
+catch
+    tbstats.Mdd    = NaN(sz(2),1);
+    tbstats.Mddlen = NaN(sz(2),1);
+    tbstats.Reclen = NaN(sz(2),1);
 end
-tbstats.Reclen  = timeToRecovery(lvl, dates, imdd, freq);
+
 tbstats.Sortino = tbstats.Annret./tbstats.Downstd;
 
 if nargout == 2
