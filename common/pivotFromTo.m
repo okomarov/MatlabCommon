@@ -47,7 +47,7 @@ s.Idname = lower(oldnames{1});
 % Pivot and spread membership
 s.Panel          = unstack(tb, 'Val','Id');
 fun              = @(x) cumsum(nan2zero(x));
-s.Panel(:,2:end) = tbextend.varfun(fun, s.Panel(:,2:end),'RenameVariables', false);
+s.Panel(:,2:end) = varfun(fun, s.Panel(:,2:end),'RenameVariables', false);
 
 % Convert back to original class
 if ~strcmpi(classval, 'double')

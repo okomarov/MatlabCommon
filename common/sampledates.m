@@ -30,7 +30,7 @@ end
 tspanel.Date = alldates;
 
 % Fill values
-tspanel(:,2:end) = tbextend.varfun(@(x) nanfillts(x,notrail), tspanel(:,2:end),...
+tspanel(:,2:end) = varfun(@(x) nanfillts(x,notrail), tspanel(:,2:end),...
                    'RenameVariables',false);
 
 % Eventually cut off the notrail part
