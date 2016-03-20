@@ -39,16 +39,20 @@ if nargin < 2 || isempty(inum)
     inum = 1:szTb(2);
 elseif islogical(inum) 
     inum = find(inum);
+elseif isequal(unique(inum),[0,1])
+    inum = find(inum);
 end
 
 vnames = getVariableNames(tb);
 idx = false(size(tb,1)-1,1);
 for c = 1:szTb(2)-1
     field = vnames{c};
+    v     = tb.(field);
     if any(c == inum)
-        idx = idx | tb.(field)(2:end) ~= tb.(field)(1:end-1);
+        idx = idx | v(2:end) ~= v(1:end-1);
     else
-        idx = idx | ~strcmpi(tb.(field)(2:end),tb.(field)(1:end-1));
+        v   = cellstr(v);
+        idx = idx | ~strcmpi(v(2:end),v(1:end-1));
     end
 end
 idx = [true; idx];
