@@ -3,8 +3,8 @@ function idx = in(A, bounds, inclusion)
 if numel(bounds) < 2
     error('in:numBounds','BOUNDS should have two dates, i.e [from, to].')
 end
-
 bounds = sort(bounds,2);
+
 if nargin < 3 || isempty(inclusion)
     inclusion = '[]';
 elseif ~ischar(inclusion)
@@ -23,7 +23,6 @@ switch inclusion
     case '(]'
         idx = lb <  A & A <= ub;
     otherwise
-        error
+        error('Invalid INCLUSION, can be "[]","[)","(]" or "()".')
 end
-
 end
