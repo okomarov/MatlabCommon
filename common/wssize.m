@@ -3,14 +3,14 @@ function wssize(varargin)
 % WSSIZE Display in the command window the size of the variables in the workspace using KB, MB and GB
 %
 %   WSSIZE Display preserving the order of the workspace pane using mixed units
-%   
+%
 %   WSSIZE arg or WSSIZE('arg') One argument syntax
 %   WSSIZE arg1 arg2 or WSSIZE('arg1','arg2') Two arguments syntax
 %       - arguments: should be char; max two arguments are allowed.
 %                    Arguments are not case-sensitive.
 %
 %   There are two types of arguments.
-%       - Sorting methods: 
+%       - Sorting methods:
 %               'name'   -  sort by name in ascending order. Not case sensitive.
 %               '-name'  -  sort by name in descending order. Not case sensitive.
 %               'size'   -  sort from smallest to biggest.
@@ -57,60 +57,62 @@ function wssize(varargin)
 % See also: WHOS, EVALIN
 
 % Original idea by Bastiaan Zuurendonk, TMW technical support engineer
-% Author: Oleg Komarov (oleg.komarov@hotmail.it) 
+% Author: Oleg Komarov (oleg.komarov@hotmail.it)
 % Tested on R14SP3 (7.1) and on R2009b
 % 02 jan 2010 - Created from service support answer
-% 05 jan 2010 - Edited description; Added sorting by not case-sensitive name and more additional features; Aknowledgments for Bastiaan Zuurendonk 
+% 05 jan 2010 - Edited description; Added sorting by not case-sensitive name and more additional features; Aknowledgments for Bastiaan Zuurendonk
 % 06 jan 2010 - Added reverse sorting and unit selection on suggestion by Yair Altman. Edited help
 % 07 jan 2010 - Evalin from 'base' to 'caller'
 % 15 jan 2010 - Now 'size' sorts from smallest to biggest. Suggestion by Andy.
 % 21 jan 2010 - Added 'See also' line.
-% 19 feb 2010 - Per Michael suggestion added grand total at the bottom. Restructured code. 
+% 19 feb 2010 - Per Michael suggestion added grand total at the bottom. Restructured code.
 
 % Ninput
-error(nargchk(0,2,nargin))
+narginchk(0,2)
 
 % Get inputs (if any)
 if iscellstr(varargin)
-    [Unit, Sortby, revsort] = getoptionals(varargin{:}); 
-else error('wssize:cellstring','Optional inputs must be char');
+    [Unit, Sortby, revsort] = getoptionals(varargin{:});
+else
+    error('wssize:cellstring','Optional inputs must be char');
 end
-    
+
 % Obtain workspace contents
 ws_contents = evalin('caller', 'whos');
 
 % If no vars, end the function
-if isempty(ws_contents); return; end
+if isempty(ws_contents)
+    return 
+end
 
 % Names and sizes
 Names = {ws_contents.name}.';
 Sizes = cat(1,ws_contents.bytes);
 
-% Sort by size or name 
+% Sort by size or name
 switch Sortby
     case 'name'
         [trash, IDX] = sort(lower(Names)); %#ok
         Sizes = Sizes(IDX); Names = Names(IDX);
     case 'size'
         [Sizes, IDX] = sort(Sizes,'ascend');
-        Names = Names(IDX); 
+        Names = Names(IDX);
 end
- 
-% Reverse sort
-if revsort; Names = flipud(Names);  Sizes = flipud(Sizes); end
+
+if revsort
+    Names = flipud(Names);
+    Sizes = flipud(Sizes);
+end
 
 % Set format according to the longest name + 1
 maxNameLength = max(cellfun('prodofsize', Names)) + 1;
 fmt = ['%-' num2str(maxNameLength) 's: %12.2f '];
 
-% All line length
-allLineLength = maxNameLength + 17;
-
-% Print memory used by variables to the screen
 printMemtoScreen(Names, Sizes,fmt, Unit)
 
 % Print grand total (if several variables)
 if numel(Sizes) > 1
+    allLineLength = maxNameLength + 17;
     fprintf([repmat('=',1,allLineLength) '\n'])
     printMemtoScreen({'T'}, sum(Sizes),fmt, Unit)
 end
@@ -126,70 +128,67 @@ function [Unit,Sortby,revsort] = getoptionals(varargin)
 Unit = ''; Sortby = ''; revsort = false;
 % Define units and sorting methods
 whichUnit   = {'kb','mb','gb'};
-whichSortby = {'-size','-name','size','name'};    
+whichSortby = {'-size','-name','size','name'};
 
-% [1] LOOP through each optional argument
+% LOOP through each optional argument
 for c = 1:numel(varargin)
     % Is it a Unit or a sorting method
-    isUnit = strmatch(lower(varargin{c}), whichUnit);
-    isSortby = strmatch(lower(varargin{c}),whichSortby);
-    
-    % [2] IF matches a unit...
-    if ~isempty(isUnit) 
-        
-        % [3a] ...and is not yet assigned
+    isUnit = strncmpi(varargin{c}, whichUnit,numel(varargin{c}));
+    isSortby = find(strncmpi(varargin{c},whichSortby,numel(varargin{c})));
+
+    % IF matches a unit...
+    if any(isUnit)
+        % ...and is not yet assigned
         if isempty(Unit)
-            Unit = whichUnit{isUnit}; 
-        else error('wssize:tooUnits','Only one unit of measure should be supplied');
-        end % [3a]
-        
-    % [2] IF matches a sorting method...
+            Unit = whichUnit{isUnit};
+        else
+            error('wssize:tooUnits','Only one unit of measure should be supplied');
+        end
+    % IF matches a sorting method...
     elseif ~isempty(isSortby)
-        
-        % [3b]...and is not yet assigned
+        % ...and is not yet assigned
         if isempty(Sortby) && ~revsort
-            
-            % [4] IF two matches, then it is just reverse order ('-')
+            % IF two matches, then it is just reverse order ('-')
             if numel(isSortby) == 2
                 revsort = true;  Sortby = '';
-            % [4] or reverse by size or name
+            % reverse by size or name
             elseif isSortby < 3
                     revsort = true;  Sortby = whichSortby{isSortby + 2}; 
-            % [4] or just by size or name
-            else Sortby = whichSortby{isSortby};
-            end % [4]
-        
-        else error('wssize:tooSort','Only one sorting method should be supplied');
-        end % [3b]
-        
-    else error('wssize:unrecArg','Argument ''%s'' not recognized',varargin{c});
-    end % [2]
-
-end % [1] LOOP
+            % just by size or name
+            else
+                Sortby = whichSortby{isSortby};
+            end
+        else
+            error('wssize:tooSort','Only one sorting method should be supplied');
+        end
+    else
+        error('wssize:unrecArg','Argument ''%s'' not recognized',varargin{c});
+    end
+end
 
 end % getoptionals
 
 % Main engine which prints to the screen the memory used by variables
 function printMemtoScreen(Names, Sizes, fmt, Unit)
 
-% Get number of vars
 numVars = numel(Names);
 
-% SWITCH between unit cases
 switch Unit
-    case 'kb'   % Display all in kilobytes
+    case 'kb'
         for ii = 1:numVars
             fprintf([fmt 'KB\n'], Names{ii}, Sizes(ii)/1024);
         end
-    case 'mb'   % Display all in megabytes
+    case 'mb'
         for ii = 1:numVars
             fprintf([fmt 'MB\n'], Names{ii}, Sizes(ii)/1024^2);
         end
-    case 'gb'   % Display all in gigabytes
+    case 'gb'
         for ii = 1:numVars
             fprintf([fmt 'GB\n'], Names{ii}, Sizes(ii)/1024^3);
         end
-    otherwise   % Display with mixed units
+        
+    % Display with mixed units
+    otherwise   
         for ii = 1:numVars
             cur_size = Sizes(ii);
             if cur_size < 1025
@@ -202,6 +201,6 @@ switch Unit
                 fprintf([fmt 'GB\n'], Names{ii}, cur_size/1024^3);
             end
         end
-end % SWITCH
+end
 
 end % printMemtoScreen
