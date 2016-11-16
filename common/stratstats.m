@@ -48,6 +48,13 @@ addParameter(p,'UseSimpleInterest', true,@(x) islogical(x) && isscalar(x))
 
 parse(p, dates, ret, varargin{:});
 
+if istable(ret)
+    varnames = ret.Properties.VariableNames;
+    ret      = ret{:,:};
+else
+    varnames = [];
+end
+
 freq   = p.Results.Frequency;
 isperc = p.Results.IsPercentageReturn;
 
@@ -121,6 +128,10 @@ catch
 end
 
 tbstats.Sortino = tbstats.Annret./tbstats.Downstd;
+
+if ~isempty(varnames)
+    tbstats.Properties.RowNames = varnames;
+end
 
 if nargout == 2
     tbarets = level2arets(lvl,dates);
