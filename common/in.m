@@ -4,6 +4,15 @@ if isempty(bounds)
     idx = true(numel(A),1);
     return
 end
+
+if iscell(bounds)
+    idx = false(numel(A),1);
+    for ii = 1:numel(bounds)
+        idx = idx | in(A,bounds{ii},inclusion);
+    end
+    return
+end
+
 if numel(bounds) < 2
     error('in:numBounds','BOUNDS should have two dates, i.e [from, to].')
 end
