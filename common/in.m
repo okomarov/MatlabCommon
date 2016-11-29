@@ -1,5 +1,9 @@
 function idx = in(A, bounds, inclusion)
 % idx = in(A, bounds, inclusion)
+if isempty(bounds)
+    idx = true(numel(A),1);
+    return
+end
 if numel(bounds) < 2
     error('in:numBounds','BOUNDS should have two dates, i.e [from, to].')
 end
