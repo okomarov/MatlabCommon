@@ -138,15 +138,15 @@ function [compbin,counts,ptf_id] = mapPtfId(bin,ptf_id)
 ptf_id           = cellfun(@(x) x(:),ptf_id,'un',0);
 ptf_id           = [ptf_id{:}];
 
-% The mapping is: max(other_layers-1, 0) * max(id_other_layers) + first_layer;
-other_layers    = bin(:,:,end:-1:2);
-id_other_layers = reshape(ptf_id(end,end:-1:2),1,1,nsig-1);
-compbin         = max(other_layers-1,0) * id_other_layers  +  bin(:,:,1);
-row             = repmat((1:nobs)',1,nser);
-idx             = compbin > 0;
-counts          = accumarray([row(idx), compbin(idx)+1],1);
-counts          = counts(:,2:end);
-% Equivalently (but slower)
+% The mapping is: max(other_layers-1, 0) * groupsize(1:last-1) + first_layer;
+other_layers = bin(:,:,end:-1:2);
+gsize        = reshape(ptf_id(end,end-1:-1:1),1,1,nsig-1);
+compbin      = max(other_layers-1,0) * gsize  +  bin(:,:,1);
+row          = repmat((1:nobs)',1,nser);
+idx          = compbin > 0;
+counts       = accumarray([row(idx), compbin(idx)+1],1);
+counts       = counts(:,2:end);
+% % Equivalently (but slower)
 % numid            = size(ptf_id,1);
 % compbin          = zeros(nobs,nser);
 % counts           = zeros(nobs,numid);
