@@ -1,20 +1,20 @@
 function [bins, counts, ptf_id, allbins] = binSignal(varargin)
-% BINSIGNAL Sort cross-section of signals into percentile or custom bins 
+% BINSIGNAL Sort cross-section of signals into percentile or custom bins
 %
 %   BINSIGNAL(SIGNAL, OPTS) Group SIGNALs according to its row-wise percentiles
 %
-%                     OPTS.() is a structure that can have the following 
+%                     OPTS.() is a structure that can have the following
 %                     exatc fields (defaults on the right):
 %
 %                         .IndependentSort - True
 %                         .PortfolioNumber - 5
 %                         .PortfolioEdges  - [], prevails on PortfolioNumber
-%                   
+%
 %                     NOTE:
-%                       * With IndependentSort, the composite group is 
+%                       * With IndependentSort, the composite group is
 %                         the intersection of each signal's groups.
-%                         Otherwise, the ORDER of signals matter, i.e. a 
-%                         set of groups is formed from the first signal, 
+%                         Otherwise, the ORDER of signals matter, i.e. a
+%                         set of groups is formed from the first signal,
 %                         and intra-groups are subsequently created
 %                         according to the signals that follow (conditional
 %                         binning). The composite group is the finest
@@ -23,7 +23,7 @@ function [bins, counts, ptf_id, allbins] = binSignal(varargin)
 %                       * The PortfolioNumber at each date splits the cross
 %                         section into equally populated groups. It uses the
 %                         prctile() function to create PortfolioEdges.
-%           
+%
 %                       * You can pass ad hoc breakpoints as
 %                         PortfolioEdges.
 %
@@ -107,7 +107,7 @@ else
         numptfs = opts.PortfolioNumber(1);
     end
     % Ensure percentiles are monotonically increasing by calculating them
-    % on position of sorted data. Data is then replaced by the positions. 
+    % on position of sorted data. Data is then replaced by the positions.
     [~,col]          = sort(data,2);
     irevert          = bsxfun(@plus,(col-1)*nobs, (1:nobs)');
     col(irevert)     = repmat(1:nser,nobs,1);
@@ -139,13 +139,13 @@ ptf_id           = cellfun(@(x) x(:),ptf_id,'un',0);
 ptf_id           = [ptf_id{:}];
 
 % The mapping is: max(other_layers-1, 0) * max(id_other_layers) + first_layer;
-other_layers     = bin(:,:,end:-1:2);
-id_other_layers  = reshape(ptf_id(end,end:-1:2),1,1,nsig-1);
-compbin          = max(other_layers-1,0) * id_other_layers  +  bin(:,:,1);
-row              = repmat((1:nobs)',1,nser);
-idx              = compbin > 0;
-counts           = accumarray([row(idx), compbin(idx)+1],1);
-counts           = counts(:,2:end);
+other_layers    = bin(:,:,end:-1:2);
+id_other_layers = reshape(ptf_id(end,end:-1:2),1,1,nsig-1);
+compbin         = max(other_layers-1,0) * id_other_layers  +  bin(:,:,1);
+row             = repmat((1:nobs)',1,nser);
+idx             = compbin > 0;
+counts          = accumarray([row(idx), compbin(idx)+1],1);
+counts          = counts(:,2:end);
 % Equivalently (but slower)
 % numid            = size(ptf_id,1);
 % compbin          = zeros(nobs,nser);
