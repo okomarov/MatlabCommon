@@ -137,16 +137,25 @@ function [compbin,counts,ptf_id] = mapPtfId(bin,ptf_id)
 [ptf_id{1:nsig}] = ndgrid(ptf_id{:});
 ptf_id           = cellfun(@(x) x(:),ptf_id,'un',0);
 ptf_id           = [ptf_id{:}];
-% Replace with a + (b-1)*max(a)
-numid            = size(ptf_id,1);
-compbin          = zeros(nobs,nser);
-counts           = zeros(nobs,numid);
-for id = 1:numid
-    combination  = reshape(ptf_id(id,:),1,1,nsig);
-    idx          = all(bsxfun(@eq, bin, combination),3);
-    compbin(idx) = id;
-    counts(:,id) = sum(idx,2);
-end
+
+% The mapping is: max(other_layers-1, 0) * max(id_other_layers) + first_layer;
+other_layers     = bin(:,:,end:-1:2);
+id_other_layers  = reshape(ptf_id(end,end:-1:2),1,1,nsig-1);
+compbin          = max(other_layers-1,0) * id_other_layers  +  bin(:,:,1);
+row              = repmat((1:nobs)',1,nser);
+idx              = compbin > 0;
+counts           = accumarray([row(idx), compbin(idx)+1],1);
+counts           = counts(:,2:end);
+% Equivalently (but slower)
+% numid            = size(ptf_id,1);
+% compbin          = zeros(nobs,nser);
+% counts           = zeros(nobs,numid);
+% for id = 1:numid
+%     combination  = reshape(ptf_id(id,:),1,1,nsig);
+%     idx          = all(bsxfun(@eq, bin, combination),3);
+%     compbin(idx) = id;
+%     counts(:,id) = sum(idx,2);
+% end
 end
 
 function [opts, signals] = parseInputs(varargin)
