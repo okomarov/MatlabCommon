@@ -57,7 +57,7 @@ if nsig > 1
 else
     compbin = bin;
     counts  = N;
-    ptf_id  = ptf_id{1};
+    ptf_id  = ptf_id{1}(:);
 end
 end
 
