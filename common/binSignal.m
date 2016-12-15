@@ -96,40 +96,29 @@ end
 % CORE binning algo
 function [bin, N, id] = binCore(data, idx, opts)
 [nobs,nser] = size(data);
+bin         = zeros(nobs, nser);
 
-% Get Edges
+% Edges binning
 if opts.HasEdges
-    edges = opts.PortfolioEdges(:,:,idx);
+    edges  = opts.PortfolioEdges(:,:,idx);
+    numptf = size(edges,2)-1;
+    N      = zeros(nobs, numptf);
+    inan   = all(isnan(edges),2);
+    for r = 1:nobs
+        if ~inan(r)
+            [N(r,:),~,bin(r,:)] = histcounts(data(r,:), edges(r,:));
+        end
+    end
+% Number of ptf binning
 else
     try
-        numptfs = opts.PortfolioNumber(idx);
+        numptf = opts.PortfolioNumber(idx);
     catch
-        numptfs = opts.PortfolioNumber(1);
+        numptf = opts.PortfolioNumber(1);
     end
-    % Ensure percentiles are monotonically increasing by calculating them
-    % on position of sorted data. Data is then replaced by the positions.
-    [~,col]          = sort(data,2);
-    irevert          = bsxfun(@plus,(col-1)*nobs, (1:nobs)');
-    col(irevert)     = repmat(1:nser,nobs,1);
-    col(isnan(data)) = NaN;
-    p                = linspace(0,100,numptfs+1);
-    edges            = prctile(col,p,2);
-    data             = col;
+    [N,~,bin] = histcounts(data, numptf);
 end
-
-% Portfolio IDs
-numptf = size(edges,2)-1;
-id     = 1:numptf;
-
-% Actual binning
-N    = zeros(nobs, numptf);
-bin  = zeros(nobs, nser);
-inan = all(isnan(edges),2);
-for r = 1:nobs
-    if ~inan(r)
-        [N(r,:),~,bin(r,:)] = histcounts(data(r,:), edges(r,:));
-    end
-end
+id = 1:numptf;
 end
 
 function [compbin,counts,ptf_id] = mapPtfId(bin,ptf_id)
