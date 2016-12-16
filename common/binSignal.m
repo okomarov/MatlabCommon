@@ -106,15 +106,8 @@ else
     catch
         numptfs = opts.PortfolioNumber(1);
     end
-    % Ensure percentiles are monotonically increasing by calculating them
-    % on position of sorted data. Data is then replaced by the positions.
-    [~,col]          = sort(data,2);
-    irevert          = bsxfun(@plus,(col-1)*nobs, (1:nobs)');
-    col(irevert)     = repmat(1:nser,nobs,1);
-    col(isnan(data)) = NaN;
-    p                = linspace(0,100,numptfs+1);
-    edges            = prctile(col,p,2);
-    data             = col;
+    p     = linspace(0,100,numptfs+1);
+    edges = prctile(data,p,2);
 end
 
 % Portfolio IDs
@@ -127,9 +120,24 @@ bin  = zeros(nobs, nser);
 inan = all(isnan(edges),2);
 for r = 1:nobs
     if ~inan(r)
-        [N(r,:),~,bin(r,:)] = histcounts(data(r,:), edges(r,:));
+        try
+            [N(r,:),~,bin(r,:)] = histcounts(data(r,:), edges(r,:));
+        catch
+            [mdata, medges]     = getMonotonicEdges(data(r,:),nser,p);
+            [N(r,:),~,bin(r,:)] = histcounts(mdata, medges);
+        end
     end
 end
+end
+
+function [data, edges] = getMonotonicEdges(data,nser,p)
+% Ensure percentiles are monotonically increasing by calculating
+% them on position of sorted data. Data is then replaced by the positions.
+[~,col]          = sort(data,2);
+col(col)         = 1:nser;
+col(isnan(data)) = NaN;
+edges            = prctile(col,p,2);
+data             = col;
 end
 
 function [compbin,counts,ptf_id] = mapPtfId(bin,ptf_id)
