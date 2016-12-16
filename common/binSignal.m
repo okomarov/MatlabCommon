@@ -197,6 +197,7 @@ end
 % Concatenate signals
 try
     signals = cat(3,varargin{isignal});
+    nsig    = size(signals,3);
 catch
     error('binPortfolios:invalidSignals','SIGNALS must have the same dimensions.')
 end
@@ -204,7 +205,7 @@ end
 % Defaults options
 opts = struct('IndependentSort', true    ,...
               'PortfolioNumber', 5       ,...
-              'PortfolioEdges' , {{[]}}  );
+              'PortfolioEdges' , {repmat({[]},1,nsig)});
 
 % Overwrite with supplied options
 for f = fieldnames(suppliedOpt)'
@@ -215,7 +216,6 @@ for f = fieldnames(suppliedOpt)'
     end
 end
 opts.HasEdges = ~cellfun(@isempty,opts.PortfolioEdges);
-nsig = size(signals,3);
 if numel(opts.HasEdges) ~= nsig
     error('binPortfolios:missingEdges','Provide a cell array with a set of ''PortfolioEdges'' for each signal. When empty ''PortfolioNumber'' is used.')
 end
