@@ -98,8 +98,8 @@ function [bin, N, id] = binCore(data, idx, opts)
 [nobs,nser] = size(data);
 
 % Get Edges
-if opts.HasEdges
-    edges = opts.PortfolioEdges(:,:,idx);
+if opts.HasEdges(idx)
+    edges = opts.PortfolioEdges{idx};
 else
     try
         numptfs = opts.PortfolioNumber(idx);
@@ -115,16 +115,20 @@ numptf = size(edges,2)-1;
 id     = 1:numptf;
 
 % Actual binning
-N    = zeros(nobs, numptf);
-bin  = zeros(nobs, nser);
-inan = all(isnan(edges),2);
-for r = 1:nobs
-    if ~inan(r)
-        try
-            [N(r,:),~,bin(r,:)] = histcounts(data(r,:), edges(r,:));
-        catch
-            [mdata, medges]     = getMonotonicEdges(data(r,:),nser,p);
-            [N(r,:),~,bin(r,:)] = histcounts(mdata, medges);
+if isrow(edges)
+    [N,~,bin] = histcounts(data, edges);
+else
+    N    = zeros(nobs, numptf);
+    bin  = zeros(nobs, nser);
+    inan = all(isnan(edges),2);
+    for r = 1:nobs
+        if ~inan(r)
+            try
+                [N(r,:),~,bin(r,:)] = histcounts(data(r,:), edges(r,:));
+            catch
+                [mdata, medges]     = getMonotonicEdges(data(r,:),nser,p);
+                [N(r,:),~,bin(r,:)] = histcounts(mdata, medges);
+            end
         end
     end
 end
@@ -199,8 +203,8 @@ end
 
 % Defaults options
 opts = struct('IndependentSort', true    ,...
-    'PortfolioNumber', 5       ,...
-    'PortfolioEdges' , []      );
+              'PortfolioNumber', 5       ,...
+              'PortfolioEdges' , {{[]}}  );
 
 % Overwrite with supplied options
 for f = fieldnames(suppliedOpt)'
@@ -210,5 +214,12 @@ for f = fieldnames(suppliedOpt)'
         warning('binPortfolios:unrecognizedOption','Unrecognized option "%s".',f{1})
     end
 end
-opts.HasEdges = ~isempty(opts.PortfolioEdges);
+opts.HasEdges = ~cellfun(@isempty,opts.PortfolioEdges);
+nsig = size(signals,3);
+if numel(opts.HasEdges) ~= nsig
+    error('binPortfolios:missingEdges','Provide a cell array with a set of ''PortfolioEdges'' for each signal. When empty ''PortfolioNumber'' is used.')
+end
+if numel(opts.PortfolioNumber) ~= nsig
+    error('binPortfolios:missingPtfNum','Provide ''PortfolioNumber'' for each signal.')
+end
 end
