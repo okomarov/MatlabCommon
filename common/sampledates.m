@@ -1,13 +1,14 @@
 function tspanel = sampledates(tspanel, refdates, notrail)
 % SAMPLEDATES Sample the time-series panel (unstacked table)
 %
-%   SAMPLEDATES(TSPANEL, REFDATES, NOTRAIL) 
+%   SAMPLEDATES(TSPANEL, REFDATES, NOTRAIL)
 
 if nargin < 3, notrail = false; end
- 
-% if ~issorted(tspanel.Date)
-%     error('sampledates:unsorted','Dates are not sorted in ascending order.')
-% end
+class_col = classVarNames(tspanel);
+allfloat  = all(strcmpi(class_col(2:end),'single') | strcmpi(class_col(2:end),'double'));
+if ~allfloat
+    error('sampledates:allFloat','TSPANEL should have all floats except for the first column of dates.')
+end
 
 % Union of dates
 dates    = tspanel.Date;
@@ -23,8 +24,8 @@ pos          = nanfillts(pos);
 from         = find(~isnan(pos),1,'first');
 tspanel      = tspanel(pos(from:end),:);
 if ~isempty(from) && from > 1
-    filler  = NaN(from-1, width(tspanel)); 
-    filler  = array2table(filler,'VariableNames', getVariableNames(tspanel)); 
+    filler  = NaN(from-1, width(tspanel));
+    filler  = array2table(filler,'VariableNames', getVariableNames(tspanel));
     tspanel = [filler; tspanel];
 end
 tspanel.Date = alldates;
