@@ -6,5 +6,5 @@ function bool = issortedpanel(tb, idname)
 % If negative date change correponds to same id then not sorted
 idx  = diff(int64(tb.Date)) < 0;
 id   = tb.(idname);
-bool = ~any(id(idx) == id([false;idx]));
+bool = ~(any(id(idx) == id([false;idx])) || any(diff(int64(id)) < 0));
 end
