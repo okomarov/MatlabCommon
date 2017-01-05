@@ -26,7 +26,7 @@ if nlay == 0
     return
 end
 
-if nargin < 2
+if nargin < 2 || isempty(names)
     names = matlab.internal.table.dfltVarNames(1:nlay);
 elseif nlay ~= numel(names)
     error('corrxs:invalidNumNames','NAMES should have one element for each layer in PANEL.')
