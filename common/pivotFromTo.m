@@ -49,11 +49,6 @@ s.Panel          = unstack(tb, 'Val','Id');
 fun              = @(x) cumsum(nan2zero(x));
 s.Panel(:,2:end) = varfun(fun, s.Panel(:,2:end),'RenameVariables', false);
 
-% Convert back to original class
-if ~strcmpi(classval, 'double')
-    s.Panel = convertColumn(s.Panel, classval, 2:size(s.Panel,2));
-end
-
 % Sample at reference dates
 if nargin < 2
     s.Date = serial2yyyymmdd(yyyymmdd2serial(min(tb.Date)):yyyymmdd2serial(max(tb.Date)));
@@ -61,4 +56,9 @@ else
     s.Date = refdates;
 end
 s.Panel = sampledates(s.Panel,s.Date,true);
+
+% Convert back to original class
+if ~strcmpi(classval, 'double')
+    s.Panel = convertColumn(s.Panel, classval, 2:size(s.Panel,2));
+end
 end
