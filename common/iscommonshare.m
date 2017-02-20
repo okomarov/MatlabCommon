@@ -6,13 +6,9 @@ if isa(tb,'dataset')
     tb = dataset2table(tb);
 end
 if nargin < 2
-    try
-        shrcd = loadresults('shrcd');
-    catch
-        shrcd = loadresults('shrcd','..\results');
-    end
+    shrcd = crsp.getShrcd();
 end
+
 shrcd = shrcd(shrcd.Shrcd == 11 | shrcd.Shrcd == 10,{'Permno','Date'});
 tf    = ismembIdDate(tb.Permno, tb.Date, shrcd.Permno, shrcd.Date);
-
 end
