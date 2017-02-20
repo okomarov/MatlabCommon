@@ -4,3 +4,6 @@
 [submodule "importFrenchData"]
 	path = importFrenchData
 	url = https://github.com/okomarov/importFrenchData
+[submodule "ParforProgMon"]
+	path = ParforProgMon
+	url = https://github.com/okomarov/ParforProgMon
